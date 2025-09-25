@@ -1,0 +1,29 @@
+#!/bin/bash
+setup_nav_db() {
+
+    local repo=$(git rev-parse --show-toplevel)
+    local db_path="$repo/db/fzf.db"
+    
+    sqlite3 "$db_path" "
+        CREATE TABLE IF NOT EXISTS directory_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS file_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL,
+            file_type TEXT,
+            action TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_dir_timestamp ON directory_history(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_file_timestamp ON file_history(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_dir_path ON directory_history(path);
+        CREATE INDEX IF NOT EXISTS idx_file_path ON file_history(path);
+    "
+}
+
+setup_nav_db
