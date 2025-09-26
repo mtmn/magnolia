@@ -1,8 +1,9 @@
 #!/bin/bash
 repo=$(git rev-parse --show-toplevel)
 
-alias rf='$repo/target/release/fzf-nav --db-path "$cdg/db/fzf.db" recent-files'
-alias rd='$repo/target/release/fzf-nav --db-path "$cdg/db/fzf.db" recent-dirs'
+alias fzf-nav='$repo/target/release/fzf-nav'
+alias rf='fzf-nav --db-path "$repo/db/fzf.db" recent-files'
+alias rd='fzf-nav --db-path "$repo/db/fzf.db" recent-dirs'
 
 d() {                                                                                                                                                                                                                                                                                                                          
     local target_dir=$(fd --hidden --exclude .git --type directory | fzf-down)                                                                                                                                                                                                                                                 
