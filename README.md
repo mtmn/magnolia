@@ -1,6 +1,6 @@
 # fzf-nav
 
-A tool for tracking and querying file system navigation history using [fzf](https://github.com/junegunn/fzf).
+A tool for tracking and querying file system navigation history.
 
 ## Installation
 
@@ -33,10 +33,10 @@ fzf-nav [--db-path <path>] [--no-color] <command> [limit]
 
 ### Shell Functions
 
-- `d` - Fuzzy navigate to directory (logs visit)
-- `f` - Fuzzy open file with appropriate app (logs open)
-- `rd` - Recent directories alias
-- `rf` - Recent files alias
+- `d` - Fuzzy navigate to directory
+- `f` - Fuzzy open file
+- `rd` - Recent directories
+- `rf` - Recent files
 
 ## File Handling
 
