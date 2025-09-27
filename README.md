@@ -1,6 +1,6 @@
 # fzf-nav
 
-Utility for tracking and querying file system navigation history.
+is a utility for tracking and querying file system navigation history.
 
 ## Installation
 
