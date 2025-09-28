@@ -1,7 +1,9 @@
 use rusqlite::{Connection, Result};
+use std::collections::HashSet;
 use std::env;
 use std::path::PathBuf;
-use std::io::IsTerminal;
+use std::io::{IsTerminal, Write};
+use std::process::{Command, Stdio};
 use serde::{Deserialize, Serialize};
 use colored_json::prelude::*;
 
@@ -54,7 +56,7 @@ fn recent_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
          ) 
          ORDER BY timestamp ASC"
     )?;
-    
+
     let entries = stmt.query_map([limit], |row| {
         Ok(DirectoryEntry {
             path: row.get(0)?,
@@ -178,6 +180,190 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
     })
 }
 
+fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error::Error>> {
+    // Get recent directories from database
+    let dirs: Vec<_> = recent_dirs(db_path, limit)?.into_iter().rev().collect();
+    
+    if dirs.is_empty() {
+        eprintln!("No recent directories found in history");
+        return Ok(());
+    }
+    
+    // Create a list of directory paths for fzf, expanding to absolute paths
+    // Use a HashSet to track seen paths and avoid duplicates
+    let mut seen = HashSet::new();
+    let mut dir_paths: Vec<String> = Vec::new();
+    
+    for d in &dirs {
+        let path = PathBuf::from(&d.path);
+        // Try to canonicalize the path to get absolute path
+        // If it fails (directory doesn't exist), try expanding manually
+        let abs_path_opt = match path.canonicalize() {
+            Ok(abs_path) => Some(abs_path.to_string_lossy().to_string()),
+            Err(_) => {
+                // If canonicalize fails, try manual expansion
+                if path.is_absolute() {
+                    Some(d.path.clone())
+                } else {
+                    // Expand relative path from home directory
+                    if let Ok(home) = env::var("HOME") {
+                        let expanded = PathBuf::from(home).join(&path);
+                        Some(expanded.to_string_lossy().to_string())
+                    } else {
+                        None
+                    }
+                }
+            }
+        };
+        
+        // Only add if we haven't seen this path before
+        if let Some(abs_path) = abs_path_opt {
+            if seen.insert(abs_path.clone()) {
+                dir_paths.push(abs_path);
+            }
+        }
+    }
+    
+    if dir_paths.is_empty() {
+        eprintln!("No valid directories found in history");
+        return Ok(());
+    }
+    
+    // Launch fzf with the directory paths
+    let mut fzf = Command::new("fzf")
+        .arg("--height=40%")
+        .arg("--reverse")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::inherit())
+        .spawn()?;
+    
+    // Send directory paths to fzf's stdin
+    if let Some(mut stdin) = fzf.stdin.take() {
+        for path in &dir_paths {
+            writeln!(stdin, "{}", path)?;
+        }
+    }
+    
+    // Wait for fzf to finish and get the selected directory
+    let output = fzf.wait_with_output()?;
+    
+    if output.status.success() {
+        let selected_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        
+        if !selected_dir.is_empty() {
+            let path = PathBuf::from(&selected_dir);
+            
+            // The path should already be absolute from our processing above,
+            // but let's make sure it exists
+            if path.exists() && path.is_dir() {
+                // Print the selected directory path so it can be captured by a shell function
+                println!("{}", selected_dir);
+            } else {
+                eprintln!("Selected directory no longer exists: {}", selected_dir);
+                std::process::exit(1);
+            }
+        }
+    } else {
+        // User cancelled fzf (Ctrl+C or Escape)
+        std::process::exit(1);
+    }
+    
+    Ok(())
+}
+
+fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error::Error>> {
+    // Get recent files from database
+    let files: Vec<_> = recent_files(db_path, limit)?.into_iter().rev().collect();
+    
+    if files.is_empty() {
+        eprintln!("No recent files found in history");
+        return Ok(());
+    }
+    
+    // Create a list of file paths for fzf, expanding to absolute paths
+    // Use a HashSet to track seen paths and avoid duplicates
+    let mut seen = HashSet::new();
+    let mut file_paths: Vec<String> = Vec::new();
+    
+    for f in &files {
+        let path = PathBuf::from(&f.path);
+        // Try to canonicalize the path to get absolute path
+        // If it fails (file doesn't exist), try expanding manually
+        let abs_path_opt = match path.canonicalize() {
+            Ok(abs_path) => Some(abs_path.to_string_lossy().to_string()),
+            Err(_) => {
+                // If canonicalize fails, try manual expansion
+                if path.is_absolute() {
+                    Some(f.path.clone())
+                } else {
+                    // Expand relative path from home directory
+                    if let Ok(home) = env::var("HOME") {
+                        let expanded = PathBuf::from(home).join(&path);
+                        Some(expanded.to_string_lossy().to_string())
+                    } else {
+                        None
+                    }
+                }
+            }
+        };
+        
+        // Only add if we haven't seen this path before
+        if let Some(abs_path) = abs_path_opt {
+            if seen.insert(abs_path.clone()) {
+                file_paths.push(abs_path);
+            }
+        }
+    }
+    
+    if file_paths.is_empty() {
+        eprintln!("No valid files found in history");
+        return Ok(());
+    }
+    
+    // Launch fzf with the file paths
+    let mut fzf = Command::new("fzf")
+        .arg("--height=40%")
+        .arg("--reverse")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::inherit())
+        .spawn()?;
+    
+    // Send file paths to fzf's stdin
+    if let Some(mut stdin) = fzf.stdin.take() {
+        for path in &file_paths {
+            writeln!(stdin, "{}", path)?;
+        }
+    }
+    
+    // Wait for fzf to finish and get the selected file
+    let output = fzf.wait_with_output()?;
+    
+    if output.status.success() {
+        let selected_file = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        
+        if !selected_file.is_empty() {
+            let path = PathBuf::from(&selected_file);
+            
+            // The path should already be absolute from our processing above,
+            // but let's make sure it exists
+            if path.exists() && path.is_file() {
+                // Print the selected file path so it can be captured by a shell function
+                println!("{}", selected_file);
+            } else {
+                eprintln!("Selected file no longer exists: {}", selected_file);
+                std::process::exit(1);
+            }
+        }
+    } else {
+        // User cancelled fzf (Ctrl+C or Escape)
+        std::process::exit(1);
+    }
+    
+    Ok(())
+}
+
 fn print_json<T: Serialize>(data: &T, use_color: bool) -> Result<(), Box<dyn std::error::Error>> {
     let json_string = serde_json::to_string_pretty(data)?;
     
@@ -201,6 +387,8 @@ fn print_usage() {
     println!("  fzf-nav [--db-path <path>] [--no-color] popular-dirs [limit]    # Show most visited directories (default: 50)");
     println!("  fzf-nav [--db-path <path>] [--no-color] file-stats              # Show file type statistics");
     println!("  fzf-nav [--db-path <path>] [--no-color] search <query>          # Search history");
+    println!("  fzf-nav [--db-path <path>] change-to-dir [limit]                # Interactive directory selection with fzf (default: 100)");
+    println!("  fzf-nav [--db-path <path>] change-to-file [limit]               # Interactive file selection with fzf (default: 100)");
     println!("  fzf-nav help                                                    # Show this help message");
     println!();
     println!("Options:");
@@ -333,6 +521,30 @@ fn main() {
                 },
                 Err(e) => Err(e),
             }
+        },
+        
+        "change-to-dir" => {
+            let limit = remaining_args.get(1)
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(100);
+            
+            if let Err(e) = change_to_dir(&db_path, limit) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+            return; // Don't process result further since change_to_dir handles its own output
+        },
+
+        "change-to-file" => {
+            let limit = remaining_args.get(1)
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(100);
+            
+            if let Err(e) = change_to_file(&db_path, limit) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+            return; // Don't process result further since change_to_file handles its own output
         },
         
         "help" | "--help" | "-h" => {
