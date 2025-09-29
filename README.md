@@ -27,8 +27,8 @@ fzf-nav [--db-path <path>] [--no-color] <command> [limit]
 
 - `recent-dirs [500]` - Recent directory visits
 - `recent-files [500]` - Recent file opens  
-- `change-to-dir [1000]` - Recent file opens  
-- `change-to-file [1000]` - Recent file opens  
+- `change-to-dir [1000]` - Interactive recent file opens  
+- `change-to-file [1000]` - Interactive recent file opens  
 - `popular-dirs [500]` - Most visited directories
 - `file-stats` - File type usage statistics
 - `search <query>` - Search history
@@ -37,8 +37,8 @@ fzf-nav [--db-path <path>] [--no-color] <command> [limit]
 
 - `d` - Fuzzy navigate to directory
 - `f` - Fuzzy open file
-- `rd` - Recent directories
-- `rf` - Recent files
+- `rd` - Interactive recent directories
+- `rf` - Interactive recent files
 - `dg` - Recent directories in fzf
 - `fg` - Recent files in fzf, open in $EDITOR
 
@@ -53,11 +53,17 @@ The `f()` function opens files based on extension:
 ## Examples
 
 ```bash
-# Navigate to recent directory
+# Navigate to directory
 d
 
 # Open recent file
 f
+
+# Interactively navigate to recent directory
+dg
+
+# Interactively open recent file
+fg
 
 # Show popular directories
 fzf-nav popular-dirs 10
@@ -68,8 +74,8 @@ fzf-nav search rust
 # Interactively change to dir
 fzf-nav change-to-dir
 
-# Interactively change to file, in $EDITOR
-fzf-nav change-to-dir
+# Interactively change to file
+fzf-nav change-to-file
 
 ```
 
