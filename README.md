@@ -1,6 +1,6 @@
 # fzf-nav
 
-is a utility for tracking and querying file system navigation history.
+tracking and querying terminal navigation history.
 
 ## Installation
 
@@ -76,7 +76,6 @@ fzf-nav change-to-dir
 
 # Interactively change to file
 fzf-nav change-to-file
-
 ```
 
 ## Database
