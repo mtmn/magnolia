@@ -40,6 +40,14 @@ struct SearchResult {
     files: Vec<FileEntry>,
 }
 
+fn normalize_path(path: &str) -> String {
+    if let Some(stripped) = path.strip_prefix("oil://") {
+        stripped.to_string()
+    } else {
+        path.to_string()
+    }
+}
+
 fn get_default_db_path() -> PathBuf {
     let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
     PathBuf::from(home).join(".fzf.db")
@@ -81,8 +89,9 @@ fn recent_files(db_path: &PathBuf, limit: i32) -> Result<Vec<FileEntry>> {
     )?;
 
     let entries = stmt.query_map([limit], |row| {
+        let raw_path: String = row.get(0)?;
         Ok(FileEntry {
-            path: row.get(0)?,
+            path: normalize_path(&raw_path),
             file_type: row.get(1)?,
             action: row.get(2)?,
             timestamp: Some(row.get(3)?),
@@ -138,7 +147,6 @@ fn file_stats(db_path: &PathBuf) -> Result<Vec<FileStats>> {
 fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
     let conn = Connection::open(db_path)?;
 
-    // Search directories
     let mut dir_stmt = conn.prepare(
         "SELECT DISTINCT path, COUNT(*) as visits
          FROM directory_history 
@@ -155,7 +163,6 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
         })
     })?;
 
-    // Search files
     let mut file_stmt = conn.prepare(
         "SELECT path, file_type, action, COUNT(*) as opens
          FROM file_history 
@@ -165,8 +172,9 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
     )?;
 
     let file_entries = file_stmt.query_map([format!("%{}%", query)], |row| {
+        let raw_path: String = row.get(0)?;
         Ok(FileEntry {
-            path: row.get(0)?,
+            path: normalize_path(&raw_path),
             file_type: row.get(1)?,
             action: row.get(2)?,
             opens: Some(row.get(3)?),
@@ -181,7 +189,6 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
 }
 
 fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error::Error>> {
-    // Get recent directories from database
     let dirs: Vec<_> = recent_dirs(db_path, limit)?.into_iter().rev().collect();
 
     if dirs.is_empty() {
@@ -189,15 +196,11 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
         return Ok(());
     }
 
-    // Create a list of directory paths for fzf, expanding to absolute paths
-    // Use a HashSet to track seen paths and avoid duplicates
     let mut seen = HashSet::new();
     let mut dir_paths: Vec<String> = Vec::new();
 
     for d in &dirs {
         let path = PathBuf::from(&d.path);
-        // Try to canonicalize the path to get absolute path
-        // If it fails (directory doesn't exist), try expanding manually
         let abs_path_opt = match path.canonicalize() {
             Ok(abs_path) => Some(abs_path.to_string_lossy().to_string()),
             Err(_) => {
@@ -229,7 +232,6 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
         return Ok(());
     }
 
-    // Launch fzf with the directory paths
     let mut fzf = Command::new("fzf")
         .arg("--height=40%")
         .arg("--reverse")
@@ -238,7 +240,6 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
         .stderr(Stdio::inherit())
         .spawn()?;
 
-    // Send directory paths to fzf's stdin
     if let Some(mut stdin) = fzf.stdin.take() {
         for path in &dir_paths {
             writeln!(stdin, "{}", path)?;
@@ -254,10 +255,7 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
         if !selected_dir.is_empty() {
             let path = PathBuf::from(&selected_dir);
 
-            // The path should already be absolute from our processing above,
-            // but let's make sure it exists
             if path.exists() && path.is_dir() {
-                // Print the selected directory path so it can be captured by a shell function
                 println!("{}", selected_dir);
             } else {
                 eprintln!("Selected directory no longer exists: {}", selected_dir);
@@ -265,7 +263,6 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
             }
         }
     } else {
-        // User cancelled fzf (Ctrl+C or Escape)
         std::process::exit(1);
     }
 
@@ -273,7 +270,6 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
 }
 
 fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error::Error>> {
-    // Get recent files from database
     let files: Vec<_> = recent_files(db_path, limit)?.into_iter().rev().collect();
 
     if files.is_empty() {
@@ -281,23 +277,17 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
         return Ok(());
     }
 
-    // Create a list of file paths for fzf, expanding to absolute paths
-    // Use a HashSet to track seen paths and avoid duplicates
     let mut seen = HashSet::new();
     let mut file_paths: Vec<String> = Vec::new();
 
     for f in &files {
         let path = PathBuf::from(&f.path);
-        // Try to canonicalize the path to get absolute path
-        // If it fails (file doesn't exist), try expanding manually
         let abs_path_opt = match path.canonicalize() {
             Ok(abs_path) => Some(abs_path.to_string_lossy().to_string()),
             Err(_) => {
-                // If canonicalize fails, try manual expansion
                 if path.is_absolute() {
                     Some(f.path.clone())
                 } else {
-                    // Expand relative path from home directory
                     if let Ok(home) = env::var("HOME") {
                         let expanded = PathBuf::from(home).join(&path);
                         Some(expanded.to_string_lossy().to_string())
@@ -308,7 +298,6 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
             }
         };
 
-        // Only add if we haven't seen this path before
         if let Some(abs_path) = abs_path_opt {
             if seen.insert(abs_path.clone()) {
                 file_paths.push(abs_path);
@@ -321,7 +310,6 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
         return Ok(());
     }
 
-    // Launch fzf with the file paths
     let mut fzf = Command::new("fzf")
         .arg("--height=40%")
         .arg("--reverse")
@@ -330,14 +318,12 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
         .stderr(Stdio::inherit())
         .spawn()?;
 
-    // Send file paths to fzf's stdin
     if let Some(mut stdin) = fzf.stdin.take() {
         for path in &file_paths {
             writeln!(stdin, "{}", path)?;
         }
     }
 
-    // Wait for fzf to finish and get the selected file
     let output = fzf.wait_with_output()?;
 
     if output.status.success() {
