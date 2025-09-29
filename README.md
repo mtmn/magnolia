@@ -62,7 +62,7 @@ f
 # Interactively navigate to recent directory
 dg
 
-# Interactively open recent file
+# Interactively open recent file (if you frequently use `fg`, consider a different function name)
 fg
 
 # Show popular directories
