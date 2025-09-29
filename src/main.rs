@@ -382,13 +382,13 @@ fn print_json<T: Serialize>(data: &T, use_color: bool) -> Result<(), Box<dyn std
 
 fn print_usage() {
     println!("Usage:");
-    println!("  fzf-nav [--db-path <path>] [--no-color] recent-dirs [limit]     # Show recent directory visits (default: 50)");
-    println!("  fzf-nav [--db-path <path>] [--no-color] recent-files [limit]    # Show recent file opens (default: 50)");
-    println!("  fzf-nav [--db-path <path>] [--no-color] popular-dirs [limit]    # Show most visited directories (default: 50)");
+    println!("  fzf-nav [--db-path <path>] [--no-color] recent-dirs [limit]     # Show recent directory visits (default: 500)");
+    println!("  fzf-nav [--db-path <path>] [--no-color] recent-files [limit]    # Show recent file opens (default: 500)");
+    println!("  fzf-nav [--db-path <path>] [--no-color] popular-dirs [limit]    # Show most visited directories (default: 500)");
     println!("  fzf-nav [--db-path <path>] [--no-color] file-stats              # Show file type statistics");
     println!("  fzf-nav [--db-path <path>] [--no-color] search <query>          # Search history");
-    println!("  fzf-nav [--db-path <path>] change-to-dir [limit]                # Interactive directory selection with fzf (default: 100)");
-    println!("  fzf-nav [--db-path <path>] change-to-file [limit]               # Interactive file selection with fzf (default: 100)");
+    println!("  fzf-nav [--db-path <path>] change-to-dir [limit]                # Interactive directory selection with fzf (default: 1000)");
+    println!("  fzf-nav [--db-path <path>] change-to-file [limit]               # Interactive file selection with fzf (default: 1000)");
     println!("  fzf-nav help                                                    # Show this help message");
     println!();
     println!("Options:");
@@ -448,7 +448,7 @@ fn main() {
             let limit = remaining_args
                 .get(1)
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(50);
+                .unwrap_or(500);
 
             match recent_dirs(&db_path, limit) {
                 Ok(dirs) => {
@@ -465,7 +465,7 @@ fn main() {
             let limit = remaining_args
                 .get(1)
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(50);
+                .unwrap_or(500);
 
             match recent_files(&db_path, limit) {
                 Ok(files) => {
@@ -482,7 +482,7 @@ fn main() {
             let limit = remaining_args
                 .get(1)
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(50);
+                .unwrap_or(500);
 
             match popular_dirs(&db_path, limit) {
                 Ok(dirs) => {
@@ -528,7 +528,7 @@ fn main() {
             let limit = remaining_args
                 .get(1)
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(100);
+                .unwrap_or(1000);
 
             if let Err(e) = change_to_dir(&db_path, limit) {
                 eprintln!("Error: {}", e);
@@ -541,7 +541,7 @@ fn main() {
             let limit = remaining_args
                 .get(1)
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(100);
+                .unwrap_or(1000);
 
             if let Err(e) = change_to_file(&db_path, limit) {
                 eprintln!("Error: {}", e);

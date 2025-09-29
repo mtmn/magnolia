@@ -5,44 +5,59 @@ alias fzf-nav='$repo/target/release/fzf-nav'
 alias rf='fzf-nav --db-path "$repo/db/fzf.db" recent-files'
 alias rd='fzf-nav --db-path "$repo/db/fzf.db" recent-dirs'
 
-d() {                                                                                                                                                                                                                                                                                                                          
-    local target_dir=$(fd --hidden --exclude .git --type directory | fzf-down)                                                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                                                                                                               
-    if [[ -n "$target_dir" ]]; then                                                                                                                                                                                                                                                                                            
-        cd "$target_dir" && fzf_log_directory_change "$target_dir"                                                                                                                                                                                                                                                             
-    fi                                                                                                                                                                                                                                                                                                                         
-}                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                               
-f() {                                                                                                                                                                                                                                                                                                                          
-    local file=$(fd --hidden --exclude .git | fzf-down)                                                                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                                               
-    if [[ -n "$file" ]]; then                                                                                                                                                                                                                                                                                                  
-        local ext="${file##*.}"                                                                                                                                                                                                                                                                                                
-        local action                                                                                                                                                                                                                                                                                                           
-                                                                                                                                                                                                                                                                                                                               
-        case "$ext" in                                                                                                                                                                                                                                                                                                         
-            mp4|flac|aiff|aif|mp3|mkv|avi|wav|webm)                                                                                                                                                                                                                                                                            
-                action="media_player"                                                                                                                                                                                                                                                                                          
-                mpv "$file" && fzf_log_file_open "$file" "$ext" "$action"                                                                                                                                                                                                                                                      
-                ;;                                                                                                                                                                                                                                                                                                             
-            jpg|jpeg|png|webp)                                                                                                                                                                                                                                                                                                 
-                action="image_viewer"                                                                                                                                                                                                                                                                                          
-                nsxiv "$file" && fzf_log_file_open "$file" "$ext" "$action"                                                                                                                                                                                                                                                
-                ;;                                                                                                                                                                                                                                                                                                             
-            pdf|epub|mobi)                                                                                                                                                                                                                                                                                                     
-                action="document_reader"                                                                                                                                                                                                                                                                                       
-                sioyek "$file" && fzf_log_file_open "$file" "$ext" "$action"                                                                                                                                                                                                                                                   
-                ;;                                                                                                                                                                                                                                                                                                             
-            *)                                                                 
-                action="text_editor"                                                                                                                           
-                "$EDITOR" "$file" && fzf_log_file_open "$file" "$ext" "$action" 
-                ;;                                                             
-        esac                       
-    fi                                 
-}                                                                              
+dg() {
+	target_dir=$(fzf-nav change-to-dir "$@")
+	if [ -n "$target_dir" ]; then
+		cd "$target_dir" && fzf_log_directory_change "$target_dir"
+	fi
+}
 
-fzf-down() {                                                                   
-    fzf --height 50% --border                                             
+fg() {
+	local ext="${file##*.}"
+	target_file=$(fzf-nav change-to-file "$@")
+	if [ -n "$target_file" ]; then
+		nvim "$target_file" && fzf_log_file_open "$target_file" "$ext" "text_editor"
+	fi
+}
+
+d() {
+	local target_dir=$(fd --hidden --exclude .git --type directory | fzf-down)
+
+	if [[ -n "$target_dir" ]]; then
+		cd "$target_dir" && fzf_log_directory_change "$target_dir"
+	fi
+}
+
+f() {
+	local file=$(fd --hidden --exclude .git | fzf-down)
+
+	if [[ -n "$file" ]]; then
+		local ext="${file##*.}"
+		local action
+
+		case "$ext" in
+		mp4 | flac | aiff | aif | mp3 | mkv | avi | wav | webm)
+			action="media_player"
+			mpv "$file" && fzf_log_file_open "$file" "$ext" "$action"
+			;;
+		jpg | jpeg | png | webp)
+			action="image_viewer"
+			nsxiv "$file" && fzf_log_file_open "$file" "$ext" "$action"
+			;;
+		pdf | epub | mobi)
+			action="document_reader"
+			sioyek "$file" && fzf_log_file_open "$file" "$ext" "$action"
+			;;
+		*)
+			action="text_editor"
+			"$EDITOR" "$file" && fzf_log_file_open "$file" "$ext" "$action"
+			;;
+		esac
+	fi
+}
+
+fzf-down() {
+	fzf --height 50% --border
 }
 
 fzf_log_directory_change() {

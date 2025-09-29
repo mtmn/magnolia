@@ -25,9 +25,11 @@ fzf-nav [--db-path <path>] [--no-color] <command> [limit]
 
 ### Commands
 
-- `recent-dirs [50]` - Recent directory visits
-- `recent-files [50]` - Recent file opens  
-- `popular-dirs [50]` - Most visited directories
+- `recent-dirs [500]` - Recent directory visits
+- `recent-files [500]` - Recent file opens  
+- `change-to-dir [1000]` - Recent file opens  
+- `change-to-file [1000]` - Recent file opens  
+- `popular-dirs [500]` - Most visited directories
 - `file-stats` - File type usage statistics
 - `search <query>` - Search history
 
@@ -37,6 +39,8 @@ fzf-nav [--db-path <path>] [--no-color] <command> [limit]
 - `f` - Fuzzy open file
 - `rd` - Recent directories
 - `rf` - Recent files
+- `dg` - Recent directories in fzf
+- `fg` - Recent files in fzf, open in $EDITOR
 
 ## File Handling
 
@@ -60,6 +64,13 @@ fzf-nav popular-dirs 10
 
 # Search for rust files
 fzf-nav search rust
+
+# Interactively change to dir
+fzf-nav change-to-dir
+
+# Interactively change to file, in $EDITOR
+fzf-nav change-to-dir
+
 ```
 
 ## Database
