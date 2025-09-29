@@ -1,11 +1,11 @@
+use colored_json::prelude::*;
 use rusqlite::{Connection, Result};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::env;
-use std::path::PathBuf;
 use std::io::{IsTerminal, Write};
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use serde::{Deserialize, Serialize};
-use colored_json::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct DirectoryEntry {
@@ -54,7 +54,7 @@ fn recent_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
              ORDER BY timestamp DESC 
              LIMIT ?1
          ) 
-         ORDER BY timestamp ASC"
+         ORDER BY timestamp ASC",
     )?;
 
     let entries = stmt.query_map([limit], |row| {
@@ -64,7 +64,7 @@ fn recent_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
             visits: None,
         })
     })?;
-    
+
     entries.collect()
 }
 
@@ -77,9 +77,9 @@ fn recent_files(db_path: &PathBuf, limit: i32) -> Result<Vec<FileEntry>> {
              ORDER BY timestamp DESC 
              LIMIT ?1
          ) 
-         ORDER BY timestamp ASC"
+         ORDER BY timestamp ASC",
     )?;
-    
+
     let entries = stmt.query_map([limit], |row| {
         Ok(FileEntry {
             path: row.get(0)?,
@@ -89,7 +89,7 @@ fn recent_files(db_path: &PathBuf, limit: i32) -> Result<Vec<FileEntry>> {
             opens: None,
         })
     })?;
-    
+
     entries.collect()
 }
 
@@ -101,9 +101,9 @@ fn popular_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
          FROM directory_history 
          GROUP BY path 
          ORDER BY visits DESC 
-         LIMIT ?1"
+         LIMIT ?1",
     )?;
-    
+
     let entries = stmt.query_map([limit], |row| {
         Ok(DirectoryEntry {
             path: row.get(0)?,
@@ -111,7 +111,7 @@ fn popular_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
             timestamp: Some(row.get(2)?),
         })
     })?;
-    
+
     entries.collect()
 }
 
@@ -121,9 +121,9 @@ fn file_stats(db_path: &PathBuf) -> Result<Vec<FileStats>> {
         "SELECT file_type, action, COUNT(*) as opens
          FROM file_history 
          GROUP BY file_type, action 
-         ORDER BY opens DESC"
+         ORDER BY opens DESC",
     )?;
-    
+
     let entries = stmt.query_map([], |row| {
         Ok(FileStats {
             file_type: row.get(0)?,
@@ -131,22 +131,22 @@ fn file_stats(db_path: &PathBuf) -> Result<Vec<FileStats>> {
             opens: row.get(2)?,
         })
     })?;
-    
+
     entries.collect()
 }
 
 fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
     let conn = Connection::open(db_path)?;
-    
+
     // Search directories
     let mut dir_stmt = conn.prepare(
         "SELECT DISTINCT path, COUNT(*) as visits
          FROM directory_history 
          WHERE path LIKE ?1
          GROUP BY path
-         ORDER BY visits DESC"
+         ORDER BY visits DESC",
     )?;
-    
+
     let dir_entries = dir_stmt.query_map([format!("%{}%", query)], |row| {
         Ok(DirectoryEntry {
             path: row.get(0)?,
@@ -154,16 +154,16 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
             timestamp: None,
         })
     })?;
-    
+
     // Search files
     let mut file_stmt = conn.prepare(
         "SELECT path, file_type, action, COUNT(*) as opens
          FROM file_history 
          WHERE path LIKE ?1
          GROUP BY path, file_type, action
-         ORDER BY opens DESC"
+         ORDER BY opens DESC",
     )?;
-    
+
     let file_entries = file_stmt.query_map([format!("%{}%", query)], |row| {
         Ok(FileEntry {
             path: row.get(0)?,
@@ -173,7 +173,7 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
             timestamp: None,
         })
     })?;
-    
+
     Ok(SearchResult {
         directories: dir_entries.collect::<Result<Vec<_>>>()?,
         files: file_entries.collect::<Result<Vec<_>>>()?,
@@ -183,17 +183,17 @@ fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
 fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error::Error>> {
     // Get recent directories from database
     let dirs: Vec<_> = recent_dirs(db_path, limit)?.into_iter().rev().collect();
-    
+
     if dirs.is_empty() {
         eprintln!("No recent directories found in history");
         return Ok(());
     }
-    
+
     // Create a list of directory paths for fzf, expanding to absolute paths
     // Use a HashSet to track seen paths and avoid duplicates
     let mut seen = HashSet::new();
     let mut dir_paths: Vec<String> = Vec::new();
-    
+
     for d in &dirs {
         let path = PathBuf::from(&d.path);
         // Try to canonicalize the path to get absolute path
@@ -215,7 +215,7 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
                 }
             }
         };
-        
+
         // Only add if we haven't seen this path before
         if let Some(abs_path) = abs_path_opt {
             if seen.insert(abs_path.clone()) {
@@ -223,12 +223,12 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
             }
         }
     }
-    
+
     if dir_paths.is_empty() {
         eprintln!("No valid directories found in history");
         return Ok(());
     }
-    
+
     // Launch fzf with the directory paths
     let mut fzf = Command::new("fzf")
         .arg("--height=40%")
@@ -237,23 +237,23 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
         .spawn()?;
-    
+
     // Send directory paths to fzf's stdin
     if let Some(mut stdin) = fzf.stdin.take() {
         for path in &dir_paths {
             writeln!(stdin, "{}", path)?;
         }
     }
-    
+
     // Wait for fzf to finish and get the selected directory
     let output = fzf.wait_with_output()?;
-    
+
     if output.status.success() {
         let selected_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        
+
         if !selected_dir.is_empty() {
             let path = PathBuf::from(&selected_dir);
-            
+
             // The path should already be absolute from our processing above,
             // but let's make sure it exists
             if path.exists() && path.is_dir() {
@@ -268,24 +268,24 @@ fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error
         // User cancelled fzf (Ctrl+C or Escape)
         std::process::exit(1);
     }
-    
+
     Ok(())
 }
 
 fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::error::Error>> {
     // Get recent files from database
     let files: Vec<_> = recent_files(db_path, limit)?.into_iter().rev().collect();
-    
+
     if files.is_empty() {
         eprintln!("No recent files found in history");
         return Ok(());
     }
-    
+
     // Create a list of file paths for fzf, expanding to absolute paths
     // Use a HashSet to track seen paths and avoid duplicates
     let mut seen = HashSet::new();
     let mut file_paths: Vec<String> = Vec::new();
-    
+
     for f in &files {
         let path = PathBuf::from(&f.path);
         // Try to canonicalize the path to get absolute path
@@ -307,7 +307,7 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
                 }
             }
         };
-        
+
         // Only add if we haven't seen this path before
         if let Some(abs_path) = abs_path_opt {
             if seen.insert(abs_path.clone()) {
@@ -315,12 +315,12 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
             }
         }
     }
-    
+
     if file_paths.is_empty() {
         eprintln!("No valid files found in history");
         return Ok(());
     }
-    
+
     // Launch fzf with the file paths
     let mut fzf = Command::new("fzf")
         .arg("--height=40%")
@@ -329,23 +329,23 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
         .spawn()?;
-    
+
     // Send file paths to fzf's stdin
     if let Some(mut stdin) = fzf.stdin.take() {
         for path in &file_paths {
             writeln!(stdin, "{}", path)?;
         }
     }
-    
+
     // Wait for fzf to finish and get the selected file
     let output = fzf.wait_with_output()?;
-    
+
     if output.status.success() {
         let selected_file = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        
+
         if !selected_file.is_empty() {
             let path = PathBuf::from(&selected_file);
-            
+
             // The path should already be absolute from our processing above,
             // but let's make sure it exists
             if path.exists() && path.is_file() {
@@ -360,13 +360,13 @@ fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::erro
         // User cancelled fzf (Ctrl+C or Escape)
         std::process::exit(1);
     }
-    
+
     Ok(())
 }
 
 fn print_json<T: Serialize>(data: &T, use_color: bool) -> Result<(), Box<dyn std::error::Error>> {
     let json_string = serde_json::to_string_pretty(data)?;
-    
+
     if use_color {
         if std::io::stdout().is_terminal() {
             println!("{}", json_string.to_colored_json_auto()?);
@@ -376,7 +376,7 @@ fn print_json<T: Serialize>(data: &T, use_color: bool) -> Result<(), Box<dyn std
     } else {
         println!("{}", json_string);
     }
-    
+
     Ok(())
 }
 
@@ -401,7 +401,7 @@ fn parse_args(args: &[String]) -> (Option<PathBuf>, bool, Vec<String>) {
     let mut use_color = true;
     let mut remaining_args = Vec::new();
     let mut i = 1; // Skip program name
-    
+
     while i < args.len() {
         match args[i].as_str() {
             "--db-path" => {
@@ -412,105 +412,106 @@ fn parse_args(args: &[String]) -> (Option<PathBuf>, bool, Vec<String>) {
                     eprintln!("Error: --db-path requires a value");
                     std::process::exit(1);
                 }
-            },
+            }
             "--no-color" => {
                 use_color = false;
                 i += 1;
-            },
+            }
             _ => {
                 remaining_args.push(args[i].clone());
                 i += 1;
             }
         }
     }
-    
+
     (db_path, use_color, remaining_args)
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     if args.len() < 2 {
         print_usage();
         return;
     }
-    
+
     let (custom_db_path, use_color, remaining_args) = parse_args(&args);
     let db_path = custom_db_path.unwrap_or_else(get_default_db_path);
-    
+
     if remaining_args.is_empty() {
         print_usage();
         return;
     }
-    
+
     let result = match remaining_args[0].as_str() {
         "recent-dirs" => {
-            let limit = remaining_args.get(1)
+            let limit = remaining_args
+                .get(1)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(50);
-            
+
             match recent_dirs(&db_path, limit) {
                 Ok(dirs) => {
                     if let Err(e) = print_json(&dirs, use_color) {
                         eprintln!("JSON output error: {}", e);
                     }
                     Ok(())
-                },
+                }
                 Err(e) => Err(e),
             }
-        },
-        
+        }
+
         "recent-files" => {
-            let limit = remaining_args.get(1)
+            let limit = remaining_args
+                .get(1)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(50);
-            
+
             match recent_files(&db_path, limit) {
                 Ok(files) => {
                     if let Err(e) = print_json(&files, use_color) {
                         eprintln!("JSON output error: {}", e);
                     }
                     Ok(())
-                },
+                }
                 Err(e) => Err(e),
             }
-        },
-        
+        }
+
         "popular-dirs" => {
-            let limit = remaining_args.get(1)
+            let limit = remaining_args
+                .get(1)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(50);
-            
+
             match popular_dirs(&db_path, limit) {
                 Ok(dirs) => {
                     if let Err(e) = print_json(&dirs, use_color) {
                         eprintln!("JSON output error: {}", e);
                     }
                     Ok(())
-                },
+                }
                 Err(e) => Err(e),
             }
-        },
-        
-        "file-stats" => {
-            match file_stats(&db_path) {
-                Ok(stats) => {
-                    if let Err(e) = print_json(&stats, use_color) {
-                        eprintln!("JSON output error: {}", e);
-                    }
-                    Ok(())
-                },
-                Err(e) => Err(e),
+        }
+
+        "file-stats" => match file_stats(&db_path) {
+            Ok(stats) => {
+                if let Err(e) = print_json(&stats, use_color) {
+                    eprintln!("JSON output error: {}", e);
+                }
+                Ok(())
             }
+            Err(e) => Err(e),
         },
-        
+
         "search" => {
             if remaining_args.len() < 2 {
                 eprintln!("Error: search requires a query string");
                 print_usage();
                 return;
             }
-            
+
             let query = &remaining_args[1];
             match search_history(&db_path, query) {
                 Ok(results) => {
@@ -518,47 +519,49 @@ fn main() {
                         eprintln!("JSON output error: {}", e);
                     }
                     Ok(())
-                },
+                }
                 Err(e) => Err(e),
             }
-        },
-        
+        }
+
         "change-to-dir" => {
-            let limit = remaining_args.get(1)
+            let limit = remaining_args
+                .get(1)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(100);
-            
+
             if let Err(e) = change_to_dir(&db_path, limit) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
             return; // Don't process result further since change_to_dir handles its own output
-        },
+        }
 
         "change-to-file" => {
-            let limit = remaining_args.get(1)
+            let limit = remaining_args
+                .get(1)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(100);
-            
+
             if let Err(e) = change_to_file(&db_path, limit) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
             return; // Don't process result further since change_to_file handles its own output
-        },
-        
+        }
+
         "help" | "--help" | "-h" => {
             print_usage();
             return;
-        },
-        
+        }
+
         _ => {
             eprintln!("Unknown command: {}", remaining_args[0]);
             print_usage();
             return;
         }
     };
-    
+
     if let Err(e) = result {
         eprintln!("Database error: {}", e);
         eprintln!("Make sure the database exists at: {:?}", db_path);
