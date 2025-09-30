@@ -15,8 +15,10 @@ sudo pacman -Sy fd fzf rustup sqlite --needed
 
 # Install Rust toolchain
 rustup install stable
-```
-```bash
+
+# Set default toolchain to stable
+rustup default stable
+
 # Build
 cargo build --release
 
