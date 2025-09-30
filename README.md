@@ -1,14 +1,18 @@
 # magnolia
 Interactive shell navigation and audit tool based on [fzf](https://github.com/junegunn/fzf) and [sqlite](https://www.sqlite.org/index.html).
 
-## Usage
-TODO
-
 ## Motivation
 My workflow resembles a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) long time ago so this made sense.
 
 ## Installation
 
+```bash
+# Install dependencies
+sudo pacman -Sy fd fzf rustup sqlite --needed
+
+# Install Rust toolchain
+rustup install stable
+```
 ```bash
 # Build
 cargo build --release
@@ -19,8 +23,6 @@ cargo build --release
 # Source shell integration
 source ./shell/magnolia
 ```
-
-**Dependencies**: `fzf`, `fd`, `sqlite3`
 
 ## Usage
 
