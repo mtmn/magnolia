@@ -1,12 +1,12 @@
 # fzf-nav
 
-navigation auditing tool that uses fzf and sqlite, written in rust.
+Navigation auditing tool that uses [fzf](https://github.com/junegunn/fzf) and [SQLite](https://sqlite.org/).
+
+## Usage
+webp soon.
 
 ## Motivation
-
-my workflow tends to share similarities with that of a squirrel trying to hide a hazelnut.
-
-and i have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=DbsAQSIKQXk) long time ago so this helps me figure things out near instantly.
+Since my workflow tends to share similarities with that of a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) some time ago, this made sense.
 
 ## Installation
 
