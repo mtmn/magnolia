@@ -1,6 +1,6 @@
 # fzf-nav
 
-Navigation auditing tool that uses [fzf](https://github.com/junegunn/fzf) and [SQLite](https://sqlite.org/).
+Navigation auditing tool.
 
 ## Usage
 webp soon.
