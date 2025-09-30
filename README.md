@@ -11,7 +11,10 @@ My workflow resembles a squirrel trying to hide a hazelnut so I have [declared b
 
 ```bash
 # Install dependencies
-sudo pacman -Sy fd fzf rustup sqlite --needed
+sudo pacman -Sy fd fzf rustup sqlite3 --needed
+
+# If you use Homebrew
+brew install fd fzf rustup sqlite3
 
 # Install Rust toolchain
 rustup install stable
@@ -58,10 +61,11 @@ magnolia [--db-path <path>] [--no-color] <command> [limit]
 ## File Handling
 
 The `f()` function opens files based on extension:
-- **Media** (mp4, mp3, etc.) → `mpv`
-- **Images** (jpg, png, etc.) → `nsxiv`
-- **Documents** (pdf, epub) → `sioyek`  
-- **Other files** → `$EDITOR`
+- audio `mpv`
+- video `mpv`
+- images `nsxiv`
+- books `sioyek`  
+- other `$EDITOR`
 
 ## Examples
 
