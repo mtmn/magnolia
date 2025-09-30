@@ -1,0 +1,13 @@
+steps:
+  build:
+    when:
+      event: [push, pull_request]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default stable
+      - apt update && apt-get install -y podman
+      - cargo install cross --git https://github.com/cross-rs/cross
+      - cross build --target aarch64-unknown-linux-gnu
+
