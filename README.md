@@ -18,7 +18,7 @@ cargo build --release
 ./db/init
 
 # Source shell integration
-source ./misc/fzf-nav
+source ./shell/fzf-nav
 ```
 
 **Dependencies**: `fzf`, `fd`, `sqlite3`
