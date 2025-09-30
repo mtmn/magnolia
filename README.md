@@ -1,6 +1,12 @@
 # fzf-nav
 
-tracking and querying terminal navigation history.
+navigation auditing tool that uses fzf and sqlite, written in rust.
+
+## Motivation
+
+my workflow tends to share similarities with that of a squirrel trying to hide a hazelnut.
+
+and i have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=DbsAQSIKQXk) long time ago so this helps me figure things out near instantly.
 
 ## Installation
 
