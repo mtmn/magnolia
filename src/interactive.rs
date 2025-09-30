@@ -51,7 +51,6 @@ pub fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::e
 
     let mut fzf = Command::new("fzf")
         .arg("--height=40%")
-        .arg("--reverse")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
@@ -129,7 +128,6 @@ pub fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::
 
     let mut fzf = Command::new("fzf")
         .arg("--height=40%")
-        .arg("--reverse")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
