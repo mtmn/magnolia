@@ -12,5 +12,5 @@ pub fn normalize_path(path: &str) -> String {
 
 pub fn get_default_db_path() -> PathBuf {
     let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    PathBuf::from(home).join(".fzf.db")
+    PathBuf::from(home).join(".magnolia.db")
 }

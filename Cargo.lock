@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "magnolia"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "colored_json",
  "rusqlite",

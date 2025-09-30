@@ -15,7 +15,7 @@ pub fn print_usage() {
     println!("  magnolia help                                                    # Show this help message");
     println!();
     println!("Options:");
-    println!("  --db-path <path>    Path to the database file (default: ~/.fzf.db)");
+    println!("  --db-path <path>    Path to the database file (default: ~/.magnolia.db)");
     println!("  --no-color          Disable colored JSON output");
 }
 
