@@ -6,7 +6,7 @@ Navigation auditing tool.
 webp soon.
 
 ## Motivation
-Since my workflow tends to share similarities with that of a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) some time ago, this made sense.
+My workflow resembles a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) long time ago so this made sense.
 
 ## Installation
 
@@ -43,6 +43,7 @@ fzf-nav [--db-path <path>] [--no-color] <command> [limit]
 
 - `d` - Fuzzy navigate to directory
 - `f` - Fuzzy open file
+- `cd` - Navigate to directory
 - `rd` - Interactive recent directories
 - `rf` - Interactive recent files
 - `dg` - Recent directories in fzf
