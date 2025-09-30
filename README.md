@@ -1,9 +1,9 @@
-# fzf-nav
+# magnolia
 
-Navigation auditing tool.
+Shell navigation auditing tool powered by fzf and sqlite.
 
 ## Usage
-webp soon.
+soon
 
 ## Motivation
 My workflow resembles a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) long time ago so this made sense.
@@ -18,7 +18,7 @@ cargo build --release
 ./db/init
 
 # Source shell integration
-source ./shell/fzf-nav
+source ./shell/magnolia
 ```
 
 **Dependencies**: `fzf`, `fd`, `sqlite3`
@@ -26,7 +26,7 @@ source ./shell/fzf-nav
 ## Usage
 
 ```bash
-fzf-nav [--db-path <path>] [--no-color] <command> [limit]
+magnolia [--db-path <path>] [--no-color] <command> [limit]
 ```
 
 ### Commands
@@ -73,16 +73,16 @@ dg
 fg
 
 # Show popular directories
-fzf-nav popular-dirs 10
+magnolia popular-dirs 10
 
 # Search for rust files
-fzf-nav search rust
+magnolia search rust
 
 # Interactively change to dir
-fzf-nav change-to-dir
+magnolia change-to-dir
 
 # Interactively change to file
-fzf-nav change-to-file
+magnolia change-to-file
 ```
 
 ## Database
@@ -91,4 +91,4 @@ SQLite database with two tables:
 - `directory_history` - path, timestamp
 - `file_history` - path, file_type, action, timestamp
 
-Default location: `~/.fzf.db` (configurable with `--db-path`)
+Default location: `~/.magnolia.db` (configurable with `--db-path`)
