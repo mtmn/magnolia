@@ -1,3 +1,5 @@
+matrix:
+  toolchain: [stable, nightly]
 steps:
   build:
     when:
@@ -6,8 +8,6 @@ steps:
     environment:
       CARGO_TERM_COLOR: always
     commands:
-      - rustup default stable
-      - apt update && apt-get install -y podman
-      - cargo install cross --git https://github.com/cross-rs/cross
-      - cross build --target aarch64-unknown-linux-gnu
+      - rustup default $toolchain
+      - cargo build --release
 

@@ -1,9 +1,13 @@
+matrix:
+  toolchain: [stable, nightly]
 steps:
   test:
     when:
       event: [push, pull_request]
-    image: docker.io/rust:bullseye
+    image: rust
     environment:
       CARGO_TERM_COLOR: always
     commands:
-      - echo tests here
+      - rustup default $toolchain
+      - cargo check -j 4
+      - cargo test -j 4
