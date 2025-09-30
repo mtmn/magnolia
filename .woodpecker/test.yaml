@@ -3,6 +3,8 @@ matrix:
 
 steps:
   test:
+    when:
+      event: [pull_request]
     image: docker.io/rust:bullseye
     environment:
       CARGO_TERM_COLOR: always
