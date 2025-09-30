@@ -56,16 +56,15 @@ magnolia [--db-path <path>] [--no-color] <command> [limit]
 - `rd` - Interactive recent directories
 - `rf` - Interactive recent files
 - `dg` - Recent directories in fzf
-- `fg` - Recent files in fzf, open in $EDITOR
+- `fg` - Recent files in fzf, open in vim
 
 ## File Handling
 
 The `f()` function opens files based on extension:
+
 - audio `mpv`
 - video `mpv`
-- images `nsxiv`
-- books `sioyek`  
-- other `$EDITOR`
+- other `vim`
 
 ## Examples
 
