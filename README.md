@@ -4,6 +4,9 @@ Interactive shell navigation and audit tool based on [fzf](https://github.com/ju
 ## Motivation
 My workflow resembles a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) long time ago so this made sense.
 
+## Usage
+[![asciicast](https://asciinema.org/a/745651.svg)](https://asciinema.org/a/745651)
+
 ## Installation
 
 ```bash
