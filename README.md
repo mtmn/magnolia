@@ -1,9 +1,8 @@
 # magnolia
-
-Shell navigation auditing tool powered by fzf and sqlite.
+Interactive shell navigation and audit tool based on [fzf](https://github.com/junegunn/fzf) and [sqlite](https://www.sqlite.org/index.html).
 
 ## Usage
-soon
+TODO
 
 ## Motivation
 My workflow resembles a squirrel trying to hide a hazelnut and I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) long time ago so this made sense.
