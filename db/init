@@ -23,6 +23,9 @@ setup_nav_db() {
         CREATE INDEX IF NOT EXISTS idx_file_timestamp ON file_history(timestamp);
         CREATE INDEX IF NOT EXISTS idx_dir_path ON directory_history(path);
         CREATE INDEX IF NOT EXISTS idx_file_path ON file_history(path);
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_file_path ON file_history(path);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_dir_path ON directory_history(path);
     "
 }
 
