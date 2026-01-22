@@ -1,8 +1,7 @@
 #!/bin/bash
 setup_nav_db() {
 
-    local repo=$(git rev-parse --show-toplevel)
-    local db_path="$repo/db/magnolia.db"
+    local db_path="$HOME/.magnolia.db"
     
     sqlite3 "$db_path" "
         CREATE TABLE IF NOT EXISTS directory_history (
