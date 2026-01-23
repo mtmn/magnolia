@@ -1,0 +1,108 @@
+#!/bin/bash
+cd() {
+    builtin cd "$@" && magnolia_log_dir_change "$1" 
+}
+
+
+d() {
+	local target_dir
+	target_dir=$(fd --hidden --exclude .git --type directory | fzf_down)
+
+	if [ -n "$target_dir" ]; then
+		cd "$target_dir" && magnolia_log_dir_change "$target_dir"
+	fi
+}
+
+f() {
+	local file
+	file=$(fd --hidden --exclude .git --exclude .filenignore | fzf_down)
+
+	if [ -n "$file" ]; then
+		local ext="${file##*.}"
+
+		case "$ext" in
+		mp4 | mkv | avi | webm)
+			action="media_player"
+			mpv "$file" && magnolia_log_file_open "$file" "$ext" "$action"
+			;;
+		flac | aiff | aif | mp3 | wav)
+			action="audio_player"
+			mpv "$file" && magnolia_log_file_open "$file" "$ext" "$action"
+			;;
+		jpg | jpeg | png | webp | svg)
+			action="image_viewer"
+			nsxiv "$file" && magnolia_log_file_open "$file" "$ext" "$action"
+			;;
+		pdf | epub | mobi)
+			action="document_reader"
+			sioyek "$file" && magnolia_log_file_open "$file" "$ext" "$action"
+			;;
+		html)
+			action="web_browser"
+			firefox "$file" && magnolia_log_file_open "$file" "$ext" "$action"
+			;;
+		*)
+			action="text_editor"
+			"$EDITOR" "$file" && magnolia_log_file_open "$file" "$ext" "$action"
+			;;
+		esac
+	fi
+}
+
+fzf_down() {
+	fzf --height=40% --reverse
+}
+
+magnolia_log_dir_change() {
+	local db_path="${HOME}/.magnolia.db"
+	local abs_path
+	abs_path="$(pwd)"
+
+	[ "$abs_path" = "$HOME" ] && return
+	sqlite3 "$db_path" "INSERT INTO directory_history (path) VALUES ('$abs_path');"
+}
+
+magnolia_log_file_open() {
+	local file_path="$1"
+	local file_type="$2"
+	local action="$3"
+	local db_path="${HOME}/.magnolia.db"
+
+	local abs_path
+	abs_path=$(realpath "$file_path" 2>/dev/null || echo "$file_path")
+
+	sqlite3 "$db_path" "INSERT INTO file_history (path, file_type, action) VALUES ('$abs_path', '$file_type', '$action');"
+}
+
+magnolia_change_to_file() {
+	local target_file
+	target_file=$(magnolia change-to-file "$@")
+	if [ -n "$target_file" ]; then
+		local ext
+		ext="${target_file##*.}"
+		nvim "$target_file" && magnolia_log_file_open "$target_file" "$ext" "text_editor"
+	fi
+}
+
+magnolia_change_to_dir() {
+	target_dir=$(magnolia change-to-dir "$@")
+	if [ -n "$target_dir" ]; then
+		cd "$target_dir" && magnolia_log_dir_change "$target_dir"
+	fi
+}
+
+magnolia_custom_dirs() {
+	local dirs=(
+		"$HOME/src"
+		"$HOME/misc"
+		"$HOME/misc/notes"
+		"$HOME/Downloads"
+	)
+
+	local selected
+	selected=$(printf "%s\n" "${dirs[@]}" | fzf_down)
+
+	if [ -n "$selected" ]; then
+		cd "$selected" && magnolia_log_dir_change "$selected" || return 1
+	fi
+}
