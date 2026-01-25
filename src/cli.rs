@@ -67,10 +67,10 @@ pub fn print_json<T: Serialize>(
         if std::io::stdout().is_terminal() {
             println!("{}", json_string.to_colored_json_auto()?);
         } else {
-            println!("{}", json_string);
+            println!("{json_string}");
         }
     } else {
-        println!("{}", json_string);
+        println!("{json_string}");
     }
 
     Ok(())

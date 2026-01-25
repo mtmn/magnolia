@@ -11,6 +11,7 @@ use db::{
 use interactive::{change_to_dir, change_to_file};
 use std::env;
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -24,7 +25,7 @@ fn main() {
 
     if cleanup {
         if let Err(e) = cleanup_database(&db_path) {
-            eprintln!("Cleanup error: {}", e);
+            eprintln!("Cleanup error: {e}");
             std::process::exit(1);
         }
         if remaining_args.is_empty() {
@@ -47,7 +48,7 @@ fn main() {
             match recent_dirs(&db_path, limit) {
                 Ok(dirs) => {
                     if let Err(e) = print_json(&dirs, use_color) {
-                        eprintln!("JSON output error: {}", e);
+                        eprintln!("JSON output error: {e}");
                     }
                     Ok(())
                 }
@@ -64,7 +65,7 @@ fn main() {
             match recent_files(&db_path, limit) {
                 Ok(files) => {
                     if let Err(e) = print_json(&files, use_color) {
-                        eprintln!("JSON output error: {}", e);
+                        eprintln!("JSON output error: {e}");
                     }
                     Ok(())
                 }
@@ -81,7 +82,7 @@ fn main() {
             match popular_dirs(&db_path, limit) {
                 Ok(dirs) => {
                     if let Err(e) = print_json(&dirs, use_color) {
-                        eprintln!("JSON output error: {}", e);
+                        eprintln!("JSON output error: {e}");
                     }
                     Ok(())
                 }
@@ -92,7 +93,7 @@ fn main() {
         "file-stats" => match file_stats(&db_path) {
             Ok(stats) => {
                 if let Err(e) = print_json(&stats, use_color) {
-                    eprintln!("JSON output error: {}", e);
+                    eprintln!("JSON output error: {e}");
                 }
                 Ok(())
             }
@@ -110,7 +111,7 @@ fn main() {
             match search_history(&db_path, query) {
                 Ok(results) => {
                     if let Err(e) = print_json(&results, use_color) {
-                        eprintln!("JSON output error: {}", e);
+                        eprintln!("JSON output error: {e}");
                     }
                     Ok(())
                 }
@@ -125,7 +126,7 @@ fn main() {
                 .unwrap_or(1000);
 
             if let Err(e) = change_to_dir(&db_path, limit) {
-                eprintln!("Error: {}", e);
+                eprintln!("Error: {e}");
                 std::process::exit(1);
             }
             return;
@@ -138,7 +139,7 @@ fn main() {
                 .unwrap_or(1000);
 
             if let Err(e) = change_to_file(&db_path, limit) {
-                eprintln!("Error: {}", e);
+                eprintln!("Error: {e}");
                 std::process::exit(1);
             }
             return;
@@ -157,7 +158,7 @@ fn main() {
     };
 
     if let Err(e) = result {
-        eprintln!("Database error: {}", e);
-        eprintln!("Make sure the database exists at: {:?}", db_path);
+        eprintln!("Database error: {e}");
+        eprintln!("Make sure the database exists at: {}", db_path.display());
     }
 }

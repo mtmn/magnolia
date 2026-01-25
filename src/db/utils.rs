@@ -1,7 +1,7 @@
 use std::env;
 use std::path::PathBuf;
 
-/// See: https://codeberg.org/mtmn/dotfiles/src/branch/master/dot_config/nvim/fnl/functions.fnl#L45
+/// See: <https://codeberg.org/mtmn/dotfiles/src/branch/master/dot_config/nvim/fnl/functions.fnl#L45>
 pub fn normalize_path(path: &str) -> String {
     if let Some(stripped) = path.strip_prefix("oil://") {
         stripped.to_string()

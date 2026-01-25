@@ -37,11 +37,10 @@ pub fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::e
         };
 
         // Only add if we haven't seen this path before
-        if let Some(abs_path) = abs_path_opt {
-            if seen.insert(abs_path.clone()) {
+        if let Some(abs_path) = abs_path_opt
+            && seen.insert(abs_path.clone()) {
                 dir_paths.push(abs_path);
             }
-        }
     }
 
     if dir_paths.is_empty() {
@@ -58,7 +57,7 @@ pub fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::e
 
     if let Some(mut stdin) = fzf.stdin.take() {
         for path in &dir_paths {
-            writeln!(stdin, "{}", path)?;
+            writeln!(stdin, "{path}")?;
         }
     }
 
@@ -72,9 +71,9 @@ pub fn change_to_dir(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::e
             let path = PathBuf::from(&selected_dir);
 
             if path.exists() && path.is_dir() {
-                println!("{}", selected_dir);
+                println!("{selected_dir}");
             } else {
-                eprintln!("Selected directory no longer exists: {}", selected_dir);
+                eprintln!("Selected directory no longer exists: {selected_dir}");
                 std::process::exit(1);
             }
         }
@@ -103,22 +102,19 @@ pub fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::
             Err(_) => {
                 if path.is_absolute() {
                     Some(f.path.clone())
+                } else if let Ok(home) = env::var("HOME") {
+                    let expanded = PathBuf::from(home).join(&path);
+                    Some(expanded.to_string_lossy().to_string())
                 } else {
-                    if let Ok(home) = env::var("HOME") {
-                        let expanded = PathBuf::from(home).join(&path);
-                        Some(expanded.to_string_lossy().to_string())
-                    } else {
-                        None
-                    }
+                    None
                 }
             }
         };
 
-        if let Some(abs_path) = abs_path_opt {
-            if seen.insert(abs_path.clone()) {
+        if let Some(abs_path) = abs_path_opt
+            && seen.insert(abs_path.clone()) {
                 file_paths.push(abs_path);
             }
-        }
     }
 
     if file_paths.is_empty() {
@@ -135,7 +131,7 @@ pub fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::
 
     if let Some(mut stdin) = fzf.stdin.take() {
         for path in &file_paths {
-            writeln!(stdin, "{}", path)?;
+            writeln!(stdin, "{path}")?;
         }
     }
 
@@ -151,9 +147,9 @@ pub fn change_to_file(db_path: &PathBuf, limit: i32) -> Result<(), Box<dyn std::
             // but let's make sure it exists
             if path.exists() && path.is_file() {
                 // Print the selected file path so it can be captured by a shell function
-                println!("{}", selected_file);
+                println!("{selected_file}");
             } else {
-                eprintln!("Selected file no longer exists: {}", selected_file);
+                eprintln!("Selected file no longer exists: {selected_file}");
                 std::process::exit(1);
             }
         }

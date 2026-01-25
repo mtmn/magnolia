@@ -105,7 +105,7 @@ pub fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
          ORDER BY visits DESC",
     )?;
 
-    let dir_entries = dir_stmt.query_map([format!("%{}%", query)], |row| {
+    let dir_entries = dir_stmt.query_map([format!("%{query}%")], |row| {
         Ok(DirectoryEntry {
             path: row.get(0)?,
             visits: Some(row.get(1)?),
@@ -121,7 +121,7 @@ pub fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
          ORDER BY opens DESC",
     )?;
 
-    let file_entries = file_stmt.query_map([format!("%{}%", query)], |row| {
+    let file_entries = file_stmt.query_map([format!("%{query}%")], |row| {
         let raw_path: String = row.get(0)?;
         Ok(FileEntry {
             path: normalize_path(&raw_path),
