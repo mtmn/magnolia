@@ -12,16 +12,19 @@ pub fn print_usage() {
     println!("  magnolia [--db-path <path>] [--no-color] search <query>          # Search history");
     println!("  magnolia [--db-path <path>] change-to-dir [limit]                # Interactive directory selection with fzf (default: 1000)");
     println!("  magnolia [--db-path <path>] change-to-file [limit]               # Interactive file selection with fzf (default: 1000)");
+    println!("  magnolia --cleanup                                               # Remove non-existent files and directories from database");
     println!("  magnolia help                                                    # Show this help message");
     println!();
     println!("Options:");
     println!("  --db-path <path>    Path to the database file (default: ~/.magnolia.db)");
     println!("  --no-color          Disable colored JSON output");
+    println!("  --cleanup           Remove entries for files/directories that no longer exist");
 }
 
-pub fn parse_args(args: &[String]) -> (Option<PathBuf>, bool, Vec<String>) {
+pub fn parse_args(args: &[String]) -> (Option<PathBuf>, bool, bool, Vec<String>) {
     let mut db_path = None;
     let mut use_color = true;
+    let mut cleanup = false;
     let mut remaining_args = Vec::new();
     let mut i = 1; // Skip program name
 
@@ -40,6 +43,10 @@ pub fn parse_args(args: &[String]) -> (Option<PathBuf>, bool, Vec<String>) {
                 use_color = false;
                 i += 1;
             }
+            "--cleanup" => {
+                cleanup = true;
+                i += 1;
+            }
             _ => {
                 remaining_args.push(args[i].clone());
                 i += 1;
@@ -47,7 +54,7 @@ pub fn parse_args(args: &[String]) -> (Option<PathBuf>, bool, Vec<String>) {
         }
     }
 
-    (db_path, use_color, remaining_args)
+    (db_path, use_color, cleanup, remaining_args)
 }
 
 pub fn print_json<T: Serialize>(

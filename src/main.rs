@@ -5,7 +5,8 @@ mod models;
 
 use cli::{parse_args, print_json, print_usage};
 use db::{
-    file_stats, get_default_db_path, popular_dirs, recent_dirs, recent_files, search_history,
+    cleanup_database, file_stats, get_default_db_path, popular_dirs, recent_dirs, recent_files,
+    search_history,
 };
 use interactive::{change_to_dir, change_to_file};
 use std::env;
@@ -18,8 +19,18 @@ fn main() {
         return;
     }
 
-    let (custom_db_path, use_color, remaining_args) = parse_args(&args);
+    let (custom_db_path, use_color, cleanup, remaining_args) = parse_args(&args);
     let db_path = custom_db_path.unwrap_or_else(get_default_db_path);
+
+    if cleanup {
+        if let Err(e) = cleanup_database(&db_path) {
+            eprintln!("Cleanup error: {}", e);
+            std::process::exit(1);
+        }
+        if remaining_args.is_empty() {
+            return;
+        }
+    }
 
     if remaining_args.is_empty() {
         print_usage();
