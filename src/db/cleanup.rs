@@ -16,6 +16,7 @@ pub fn cleanup_database(db_path: &PathBuf) -> Result<()> {
         for entry in dir_iter {
             let (id, path) = entry?;
             if !Path::new(&path).exists() {
+                eprintln!("Removing directory path: {path}");
                 to_remove.push(id);
             }
         }
@@ -40,6 +41,7 @@ pub fn cleanup_database(db_path: &PathBuf) -> Result<()> {
         for entry in file_iter {
             let (id, path) = entry?;
             if !Path::new(&path).exists() {
+                eprintln!("Removing file path: {path}");
                 to_remove.push(id);
             }
         }
