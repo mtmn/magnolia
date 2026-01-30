@@ -7,7 +7,7 @@ pub fn print_usage() {
     println!("Usage:");
     println!("  magnolia [--db-path <path>] [--no-color] recent-dirs [limit]     # Show recent directory visits (default: 500)");
     println!("  magnolia [--db-path <path>] [--no-color] recent-files [limit]    # Show recent file opens (default: 500)");
-    println!("  magnolia [--db-path <path>] [--no-color] popular-dirs [limit]    # Show most visited directories (default: 500)");
+    println!("  magnolia [--db-path <path>] [--no-color] frequent-dirs [limit]   # Show most visited directories (default: 500)");
     println!("  magnolia [--db-path <path>] [--no-color] file-stats              # Show file type statistics");
     println!("  magnolia [--db-path <path>] [--no-color] search <query>          # Search history");
     println!("  magnolia [--db-path <path>] change-to-dir [limit]                # Interactive directory selection with fzf (default: 1000)");

@@ -44,7 +44,7 @@ magnolia [--db-path <path>] [--no-color] <command> [limit]
 - `recent-files [500]` - Recent file opens  
 - `change-to-dir [1000]` - Interactive recent file opens  
 - `change-to-file [1000]` - Interactive recent file opens  
-- `popular-dirs [500]` - Most visited directories
+- `frequent-dirs [500]` - Most visited directories
 - `file-stats` - File type usage statistics
 - `search <query>` - Search history
 
@@ -81,8 +81,8 @@ dg
 # Interactively open recent file (if you frequently use `fg`, consider a different function name)
 fg
 
-# Show popular directories
-magnolia popular-dirs 10
+# Show frequently visited directories
+magnolia frequent-dirs 10
 
 # Search for rust files
 magnolia search rust

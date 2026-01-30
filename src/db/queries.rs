@@ -52,7 +52,7 @@ pub fn recent_files(db_path: &PathBuf, limit: i32) -> Result<Vec<FileEntry>> {
     entries.collect()
 }
 
-pub fn popular_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
+pub fn frequent_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry>> {
     let conn = Connection::open(db_path)?;
     let mut stmt = conn.prepare(
         "SELECT path, COUNT(*) as visits, 

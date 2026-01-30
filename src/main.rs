@@ -5,7 +5,7 @@ mod models;
 
 use cli::{parse_args, print_json, print_usage};
 use db::{
-    cleanup_database, file_stats, get_default_db_path, popular_dirs, recent_dirs, recent_files,
+    cleanup_database, file_stats, get_default_db_path, frequent_dirs, recent_dirs, recent_files,
     search_history,
 };
 use interactive::{change_to_dir, change_to_file};
@@ -73,13 +73,13 @@ fn main() {
             }
         }
 
-        "popular-dirs" => {
+        "frequent-dirs" => {
             let limit = remaining_args
                 .get(1)
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(500);
 
-            match popular_dirs(&db_path, limit) {
+            match frequent_dirs(&db_path, limit) {
                 Ok(dirs) => {
                     if let Err(e) = print_json(&dirs, use_color) {
                         eprintln!("JSON output error: {e}");
