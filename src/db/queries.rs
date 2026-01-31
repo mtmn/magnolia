@@ -1,5 +1,5 @@
 use crate::db::utils::normalize_path;
-use crate::models::{DirectoryEntry, FileEntry, FileStats, SearchResult};
+use crate::models::{DirectoryEntry, FileEntry, SearchResult};
 use rusqlite::{Connection, Result};
 use std::path::PathBuf;
 
@@ -68,26 +68,6 @@ pub fn frequent_dirs(db_path: &PathBuf, limit: i32) -> Result<Vec<DirectoryEntry
             path: row.get(0)?,
             visits: Some(row.get(1)?),
             timestamp: Some(row.get(2)?),
-        })
-    })?;
-
-    entries.collect()
-}
-
-pub fn file_stats(db_path: &PathBuf) -> Result<Vec<FileStats>> {
-    let conn = Connection::open(db_path)?;
-    let mut stmt = conn.prepare(
-        "SELECT file_type, action, COUNT(*) as opens
-         FROM file_history 
-         GROUP BY file_type, action 
-         ORDER BY opens DESC",
-    )?;
-
-    let entries = stmt.query_map([], |row| {
-        Ok(FileStats {
-            file_type: row.get(0)?,
-            action: row.get(1)?,
-            opens: row.get(2)?,
         })
     })?;
 

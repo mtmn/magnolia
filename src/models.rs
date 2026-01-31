@@ -21,13 +21,6 @@ pub struct FileEntry {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct FileStats {
-    pub file_type: String,
-    pub action: String,
-    pub opens: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct SearchResult {
     pub directories: Vec<DirectoryEntry>,
     pub files: Vec<FileEntry>,

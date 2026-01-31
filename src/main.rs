@@ -5,7 +5,7 @@ mod models;
 
 use cli::{parse_args, print_json, print_usage};
 use db::{
-    cleanup_database, file_stats, get_default_db_path, frequent_dirs, recent_dirs, recent_files,
+    cleanup_database, get_default_db_path, frequent_dirs, recent_dirs, recent_files,
     search_history,
 };
 use interactive::{change_to_dir, change_to_file};
@@ -89,16 +89,6 @@ fn main() {
                 Err(e) => Err(e),
             }
         }
-
-        "file-stats" => match file_stats(&db_path) {
-            Ok(stats) => {
-                if let Err(e) = print_json(&stats, use_color) {
-                    eprintln!("JSON output error: {e}");
-                }
-                Ok(())
-            }
-            Err(e) => Err(e),
-        },
 
         "search" => {
             if remaining_args.len() < 2 {

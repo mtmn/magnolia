@@ -45,7 +45,6 @@ magnolia [--db-path <path>] [--no-color] <command> [limit]
 - `change-to-dir [1000]` - Interactive recent file opens  
 - `change-to-file [1000]` - Interactive recent file opens  
 - `frequent-dirs [500]` - Most visited directories
-- `file-stats` - File type usage statistics
 - `search <query>` - Search history
 
 ### Shell Functions
