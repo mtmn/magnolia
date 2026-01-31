@@ -1,11 +1,12 @@
-# magnolia
+# magnolia ![build status](https://ci.codeberg.org/api/badges/15336/status.svg)
+
 Interactive shell navigation and history based on [fzf](https://github.com/junegunn/fzf) and [sqlite](https://www.sqlite.org/index.html).
 
 ## Motivation
 My workflow resembles a squirrel trying to hide a hazelnut so I have [declared bankruptcy on my mind](https://www.youtube.com/watch?v=XUZ9VATeF_4) and making this made sense.
 
 ## Usage
-![](docs/usage.gif)
+![usage example](docs/usage.gif)
 
 ## Installation
 
