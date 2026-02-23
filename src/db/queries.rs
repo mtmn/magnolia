@@ -1,4 +1,3 @@
-use crate::db::utils::normalize_path;
 use crate::models::{DirectoryEntry, FileEntry, SearchResult};
 use rusqlite::{Connection, Result};
 use std::path::PathBuf;
@@ -41,7 +40,7 @@ pub fn recent_files(db_path: &PathBuf, limit: i32) -> Result<Vec<FileEntry>> {
     let entries = stmt.query_map([limit], |row| {
         let raw_path: String = row.get(0)?;
         Ok(FileEntry {
-            path: normalize_path(&raw_path),
+            path: raw_path,
             file_type: row.get(1)?,
             action: row.get(2)?,
             timestamp: Some(row.get(3)?),
@@ -104,7 +103,7 @@ pub fn search_history(db_path: &PathBuf, query: &str) -> Result<SearchResult> {
     let file_entries = file_stmt.query_map([format!("%{query}%")], |row| {
         let raw_path: String = row.get(0)?;
         Ok(FileEntry {
-            path: normalize_path(&raw_path),
+            path: raw_path,
             file_type: row.get(1)?,
             action: row.get(2)?,
             opens: Some(row.get(3)?),
