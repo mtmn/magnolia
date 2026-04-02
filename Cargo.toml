@@ -2,9 +2,10 @@
 name = "magnolia"
 version = "0.2.0"
 edition = "2024"
+include = ["src/**/*", "LICENSE", "README.md"]
 
 [dependencies]
-rusqlite = { version = "0.38", features = ["bundled"] }
+rusqlite = { version = "0.39", features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 colored_json = "5.0"
